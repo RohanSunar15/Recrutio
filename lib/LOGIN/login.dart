@@ -39,11 +39,11 @@ class LoginPageState extends State<LoginPage> {
                   overflowSpacing: 10,
                   overflowAlignment: OverflowBarAlignment.center,
                   children: [
-                    const SizedBox(height: 70,),
+                    const SizedBox(height: 45,),
                      Image.asset('assets/images/logo/logo.png',
                        alignment: Alignment.center,
                      ),
-                    const SizedBox(height: 30,),
+                    const SizedBox(height: 15,),
                     //header
                     const Text(
                       "Sign in",
@@ -53,10 +53,10 @@ class LoginPageState extends State<LoginPage> {
                           fontSize: 30,
                           color: Colors.black),
                     ),
-                    const SizedBox(height: 30,),
+                    const SizedBox(height: 15,),
 
                     // textfield of email
-                    TextField(
+                    TextFormField(
                       keyboardType: TextInputType.text,
                       style: const TextStyle(
                           color: Colors.black
@@ -74,7 +74,7 @@ class LoginPageState extends State<LoginPage> {
                     ),
 
                     //TEXTFEILD OF PASSWORD
-                    TextField(
+                    TextFormField(
                       keyboardType: TextInputType.text,
                       style: const  TextStyle(
                           color: Colors.black
@@ -84,7 +84,7 @@ class LoginPageState extends State<LoginPage> {
                       decoration: InputDecoration(
                         filled: true,
                         hintText: 'Password',
-                        prefixIcon:const Icon(Icons.key_sharp),
+                        prefixIcon:const Icon(Icons.lock),
                         suffixIcon: GestureDetector(
                           onTap: (){
                             setState(() {
