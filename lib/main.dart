@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:Recrutio/LOGIN/login.dart';
-import 'package:Recrutio/SIGNUP/signup.dart';
 
 void main() {
   runApp(const MyApp());

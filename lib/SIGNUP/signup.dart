@@ -34,16 +34,21 @@ class SignupPageState extends State<SignupPage> {
               overflowSpacing: 10,
               overflowAlignment: OverflowBarAlignment.center,
               children: [
+                const SizedBox(height: 70,),
+                Image.asset('assets/images/logo/logo.png',
+                  alignment: Alignment.center,
+                ),
+                const SizedBox(height: 30,),
                 //header
                 const Text(
-                  "Signup",
+                  "Sign up",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      height: 5,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 50,
-                      color: Colors.white),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 30,
+                      color: Colors.black),
                 ),
+                const SizedBox(height: 30,),
 
                 // TEXTFEILD OF NAME
                 TextField(
@@ -188,3 +193,7 @@ class SignupPageState extends State<SignupPage> {
     );
   }
 }
+
+
+
+

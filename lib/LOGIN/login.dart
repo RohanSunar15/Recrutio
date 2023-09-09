@@ -30,23 +30,31 @@ class LoginPageState extends State<LoginPage> {
         ),
         child:  SingleChildScrollView(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+
               Padding(
-                padding:const  EdgeInsets.all(25),
+                padding:const  EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: OverflowBar(
                   overflowSpacing: 10,
                   overflowAlignment: OverflowBarAlignment.center,
                   children: [
+                    const SizedBox(height: 70,),
+                     Image.asset('assets/images/logo/logo.png',
+                       alignment: Alignment.center,
+                     ),
+                    const SizedBox(height: 30,),
                     //header
                     const Text(
-                      "Recrutio",
+                      "Sign in",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          height: 5,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 50,
-                          color: Colors.white),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 30,
+                          color: Colors.black),
                     ),
+                    const SizedBox(height: 30,),
+
                     // textfield of email
                     TextField(
                       keyboardType: TextInputType.text,
