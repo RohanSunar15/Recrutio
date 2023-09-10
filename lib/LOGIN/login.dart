@@ -1,3 +1,4 @@
+import 'package:Recrutio/ForgetPassword/forgetpassword.dart';
 import 'package:Recrutio/SIGNUP/signup.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -105,7 +106,10 @@ class LoginPageState extends State<LoginPage> {
                       child: Padding(
                         padding: const EdgeInsets.only(right: 20.0,bottom: 2.0),
                         child: TextButton(
-                          onPressed: (){},
+                          onPressed: (){
+                            Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => const ForgetPasswordPage()));
+                          },
                           child:const  Text(
                             "Forget Password?",
                             style:TextStyle(
