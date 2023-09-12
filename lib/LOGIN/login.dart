@@ -1,8 +1,10 @@
 import 'package:Recrutio/ForgetPassword/forgetpassword.dart';
 import 'package:Recrutio/SIGNUP/signup.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:Recrutio/consts.dart';
+import 'package:Recrutio/authentication _repo/authentication_repo.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -14,11 +16,24 @@ class LoginPage extends StatefulWidget {
 class LoginPageState extends State<LoginPage> {
   bool _obscureText = true;
 
+  final authenticationrepo _auth = authenticationrepo();
+
+  TextEditingController _email = TextEditingController();
+  TextEditingController _password = TextEditingController();
+
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
 
+  @override
+  Widget build( context) {
+    final formkey = GlobalKey<FormState>();
+
+    return Scaffold(
       //background
       body: Container(
         height: double.maxFinite,
@@ -58,6 +73,7 @@ class LoginPageState extends State<LoginPage> {
 
                     // textfield of email
                     TextFormField(
+                      controller: _email,
                       keyboardType: TextInputType.text,
                       style: const TextStyle(
                           color: Colors.black
@@ -76,6 +92,7 @@ class LoginPageState extends State<LoginPage> {
 
                     //TEXTFEILD OF PASSWORD
                     TextFormField(
+                      controller: _password,
                       keyboardType: TextInputType.text,
                       style: const  TextStyle(
                           color: Colors.black
@@ -92,7 +109,7 @@ class LoginPageState extends State<LoginPage> {
                               _obscureText = !_obscureText; // Toggle the obscureText state.
                             });
                           },
-                          child: Icon(_obscureText? Icons.visibility: Icons.visibility_off),
+                          child: Icon(_obscureText? Icons.visibility_off: Icons.visibility),
                         ),
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -121,7 +138,8 @@ class LoginPageState extends State<LoginPage> {
                     ),
 
                     // its a button of continue
-                    CupertinoButton(
+                    GestureDetector(
+                      onTap: _login,
                         child: Container(
                           alignment: Alignment.center,
                           height: 60,
@@ -138,8 +156,9 @@ class LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ),
-                        onPressed: (){}
                     ),
+
+
                     const Text(" ------------------- or ------------------- ",
                       style: TextStyle(
                           color: Color.fromRGBO(225, 225, 225, 70),
@@ -202,6 +221,25 @@ class LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  void _login() async {
+    String email = _email.text;
+    String password = _password.text;
+
+
+    User? user = await  _auth.signInWithEmailAndPassword( email, password);
+
+    if(user != null){
+      print("User is successfully created");
+      Navigator.pushNamed(context, "/home");
+    }else{
+      print("Some error occured");
+    }
+  }
+
+
+
 }
+
 
 

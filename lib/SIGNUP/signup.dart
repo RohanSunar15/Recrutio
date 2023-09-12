@@ -1,29 +1,41 @@
 import 'package:Recrutio/LOGIN/login.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:Recrutio/consts.dart';
+import 'package:Recrutio/authentication _repo/authentication_repo.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+  const SignupPage({Key? key}) : super(key: key);
 
   @override
   SignupPageState createState() => SignupPageState();
 }
 
 class SignupPageState extends State<SignupPage> {
-
-  late String _name, _email;
-
-  TextEditingController _password = TextEditingController();
-  TextEditingController _confirmpassword = TextEditingController();
-
-  final formkey = GlobalKey<FormState>();
-
-
   bool _obscureText = true;
+
+  final authenticationrepo _auth = authenticationrepo();
+
+   TextEditingController _email = TextEditingController();
+   TextEditingController _password = TextEditingController();
+   TextEditingController _name = TextEditingController();
+   TextEditingController _confirmpassword = TextEditingController();
+
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    _name.dispose();
+    _confirmpassword.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final formkey = GlobalKey<FormState>();
+
     return Scaffold(
 
       //background
@@ -63,6 +75,7 @@ class SignupPageState extends State<SignupPage> {
 
                   // TEXTFEILD OF NAME
                   TextFormField(
+                    controller: _name,
                     keyboardType: TextInputType.text,
                     style: const TextStyle(
                         color: Colors.black
@@ -79,34 +92,30 @@ class SignupPageState extends State<SignupPage> {
                     ),
                     validator: (value) {
                       if (value!.isEmpty ||
-                          !RegExp(r'^[a-z A-Z]+$').hasMatch(value!)) {
+                          !RegExp(r'^[a-z A-Z]+$').hasMatch(value)) {
                         return "Please Enter Name";
                       } else {
                         return null;
                       }
                     },
-                    onSaved: (name) {
-                      _name = name!;
-                    },
                   ),
 
                   // TEXTFEILD OF EMAIL
                   TextFormField(
+                    controller: _email,
                     keyboardType: TextInputType.text,
                     style: const TextStyle(
                         color: Colors.black
                     ),
                     validator: (value) {
                       if (value!.isEmpty ||
-                          !RegExp(r'^[a-z A-Z0-9+_.-]+@[a-z A-Z0-9.-]+.[a-z]').hasMatch(value!)) {
+                          !RegExp(r'^[a-z A-Z0-9+_.-]+@[a-z A-Z0-9.-]+.[a-z]').hasMatch(value)) {
                         return "Please Enter Email";
                       } else {
                         return null;
                       }
                     },
-                    onSaved: (email) {
-                      _email = email!;
-                    },
+
                     decoration: InputDecoration(
                       filled: true,
                       hintText: 'Email',
@@ -147,8 +156,8 @@ class SignupPageState extends State<SignupPage> {
                             !_obscureText; // Toggle the obscureText state.
                           });
                         },
-                        child: Icon(_obscureText ? Icons.visibility : Icons
-                            .visibility_off),
+                        child: Icon(_obscureText ? Icons.visibility_off : Icons
+                            .visibility),
                       ),
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -188,8 +197,8 @@ class SignupPageState extends State<SignupPage> {
                             !_obscureText; // Toggle the obscureText state.
                           });
                         },
-                        child: Icon(_obscureText ? Icons.visibility : Icons
-                            .visibility_off),
+                        child: Icon(_obscureText ? Icons.visibility_off : Icons
+                            .visibility),
                       ),
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -200,7 +209,8 @@ class SignupPageState extends State<SignupPage> {
                   ),
 
                   // its a button of continue
-                  CupertinoButton(
+                  GestureDetector(
+                    onTap: _signup,
                       child: Container(
                         alignment: Alignment.center,
                         height: 60,
@@ -217,13 +227,7 @@ class SignupPageState extends State<SignupPage> {
                           ),
                         ),
                       ),
-                      onPressed: () {
-                        if (formkey.currentState!.validate()) {
-                          final snackBar =  SnackBar(content: Text('Submitting form'));
-                          var scaffoldKey;
-                          scaffoldKey.currentState!.showSnackBar(snackBar);
-                        }
-                      }
+
                   ),
 
                   Row(
@@ -259,5 +263,22 @@ class SignupPageState extends State<SignupPage> {
       ),
     );
   }
+  void _signup() async {
+    String email = _email.text;
+    String password = _password.text;
+
+
+    User? user = await  _auth.signUpWithEmailAndPassword( email, password);
+
+    if(user != null){
+      print("User is successfully created");
+      Navigator.pushNamed(context, "/home");
+    }else{
+      print("Some error occured");
+    }
+  }
 }
+
+
+
 

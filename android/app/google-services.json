@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "157218488338",
+    "project_id": "recruito-5c9e3",
+    "storage_bucket": "recruito-5c9e3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157218488338:android:32197988a43f28419c58cb",
+        "android_client_info": {
+          "package_name": "com.college_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjwOW4RafhGk_MwEtW9Obsi9MAQeP8ALU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
