@@ -231,7 +231,7 @@ class LoginPageState extends State<LoginPage> {
 
     if(user != null){
       print("User is successfully created");
-      Navigator.pushNamed(context, "/home");
+      Navigator.pushNamed(context, "/animation");
     }else{
       print("Some error occured");
     }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:Recrutio/LOGIN/login.dart';
 import 'package:Recrutio/authentication _repo/authentication_repo.dart';
 import 'package:get/get.dart';
+import 'package:Recrutio/ANIMATION/lottieanimation.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       routes: <String, WidgetBuilder> {
         '/home': (BuildContext context) => const HomePage(),
         '/login': (BuildContext context) => const LoginPage(),
+        '/animation':(BuildContext context) => const LottieAnimation(),
       },
       home:  const LoginPage(),
     );

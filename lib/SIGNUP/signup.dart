@@ -17,10 +17,10 @@ class SignupPageState extends State<SignupPage> {
 
   final authenticationrepo _auth = authenticationrepo();
 
-   TextEditingController _email = TextEditingController();
-   TextEditingController _password = TextEditingController();
-   TextEditingController _name = TextEditingController();
-   TextEditingController _confirmpassword = TextEditingController();
+  TextEditingController _email = TextEditingController();
+  TextEditingController _password = TextEditingController();
+  TextEditingController _name = TextEditingController();
+  TextEditingController _confirmpassword = TextEditingController();
 
 
   @override
@@ -109,7 +109,8 @@ class SignupPageState extends State<SignupPage> {
                     ),
                     validator: (value) {
                       if (value!.isEmpty ||
-                          !RegExp(r'^[a-z A-Z0-9+_.-]+@[a-z A-Z0-9.-]+.[a-z]').hasMatch(value)) {
+                          !RegExp(r'^[a-z A-Z0-9+_.-]+@[a-z A-Z0-9.-]+.[a-z]')
+                              .hasMatch(value)) {
                         return "Please Enter Email";
                       } else {
                         return null;
@@ -136,11 +137,10 @@ class SignupPageState extends State<SignupPage> {
                         color: Colors.black
                     ),
                     validator: (value) {
-                      if (value!.isEmpty){
+                      if (value!.isEmpty) {
                         return "Please Enter Password";
                       }
-                        return null;
-
+                      return null;
                     },
 
                     obscureText: _obscureText,
@@ -173,15 +173,13 @@ class SignupPageState extends State<SignupPage> {
                         color: Colors.black
                     ),
                     validator: (value) {
-                      if (value!.isEmpty){
+                      if (value!.isEmpty) {
                         return "Please Enter Re-Password";
                       }
-                      if(_password.text != _confirmpassword.text)
-                        {
-                          return "Password does not Match";
-                        }
+                      if (_password.text != _confirmpassword.text) {
+                        return "Password does not Match";
+                      }
                       return null;
-
                     },
 
                     obscureText: _obscureText,
@@ -211,22 +209,22 @@ class SignupPageState extends State<SignupPage> {
                   // its a button of continue
                   GestureDetector(
                     onTap: _signup,
-                      child: Container(
-                        alignment: Alignment.center,
-                        height: 60,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: const Color(0xff000000),
-                          borderRadius: BorderRadius.circular(60),
-                        ),
-                        child: const Text("Continue",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    child: Container(
+                      alignment: Alignment.center,
+                      height: 60,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xff000000),
+                        borderRadius: BorderRadius.circular(60),
+                      ),
+                      child: const Text("Continue",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
 
                   ),
 
@@ -263,22 +261,29 @@ class SignupPageState extends State<SignupPage> {
       ),
     );
   }
+
   void _signup() async {
     String email = _email.text;
     String password = _password.text;
+    String confirmPassword = _confirmpassword.text;
 
+    if (password == confirmPassword) {
+      User? user = await _auth.signUpWithEmailAndPassword(email, password);
 
-    User? user = await  _auth.signUpWithEmailAndPassword( email, password);
-
-    if(user != null){
-      print("User is successfully created");
-      Navigator.pushNamed(context, "/home");
-    }else{
-      print("Some error occured");
+      if (user != null) {
+        print("User is successfully created");
+        Navigator.pushNamed(context, "/login");
+      } else {
+        print("Some error occurred");
+      }
+    } else {
+      // Show an error message because the password and confirm password do not match
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:  Text('Password and Confirm Password do not match.'),
+        ),
+      );
     }
   }
+
 }
-
-
-
-
