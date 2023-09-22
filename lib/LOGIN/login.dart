@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, avoid_print, use_build_context_synchronously
+
 import 'package:Recrutio/ForgetPassword/forgetpassword.dart';
 import 'package:Recrutio/SIGNUP/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,8 +20,8 @@ class LoginPageState extends State<LoginPage> {
 
   final authenticationrepo _auth = authenticationrepo();
 
-  TextEditingController _email = TextEditingController();
-  TextEditingController _password = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
 
 
   @override
@@ -50,7 +52,7 @@ class LoginPageState extends State<LoginPage> {
             children: [
 
               Padding(
-                padding:const  EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                padding:const  EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 child: OverflowBar(
                   overflowSpacing: 10,
                   overflowAlignment: OverflowBarAlignment.center,
@@ -78,6 +80,7 @@ class LoginPageState extends State<LoginPage> {
                       style: const TextStyle(
                           color: Colors.black
                       ),
+
                       decoration: InputDecoration(
                         filled: true,
                         hintText: 'Email',
@@ -87,6 +90,7 @@ class LoginPageState extends State<LoginPage> {
                           borderSide: BorderSide.none,
                           borderRadius: BorderRadius.circular(60),
                         ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
                       ),
                     ),
 
@@ -116,6 +120,7 @@ class LoginPageState extends State<LoginPage> {
                           borderSide: BorderSide.none,
                           borderRadius: BorderRadius.circular(60),
                         ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
                       ),
                     ),
                     Align(
@@ -142,8 +147,8 @@ class LoginPageState extends State<LoginPage> {
                       onTap: _login,
                         child: Container(
                           alignment: Alignment.center,
-                          height: 60,
-                          width: double.infinity,
+                          height: 50,
+                          width: 350,
                           decoration:  BoxDecoration(
                             color: const Color(0xff2c2828),
                             borderRadius: BorderRadius.circular(60),
@@ -168,28 +173,42 @@ class LoginPageState extends State<LoginPage> {
                     ),
 
                     CupertinoButton(
+                      onPressed: () {},
+                      child: Padding(
+                        padding: const EdgeInsets.all(0.0), // Adjust the padding as needed
                         child: Container(
                           alignment: Alignment.center,
                           height: 40,
-                          width: double.infinity,
-                          decoration:  BoxDecoration(
-                            image: const DecorationImage(
-                              image: AssetImage('assets/images/loginpage/google.png'),
-                              alignment: Alignment.centerLeft,
-                            ),
+                          width: 350,
+                          decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(60),
                           ),
-                          child: const Text("Sign in with Google",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 40.0), // Adjust the padding around the image
+                                child: Image.asset(
+                                  'assets/images/loginpage/google.png',
+                                  height: 20, // Adjust the image size as needed
+                                  width: 20,  // Adjust the image size as needed
+                                  alignment: Alignment.centerLeft,
+                                ),
+                              ),
+                              const Text(
+                                "Sign in with Google",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        onPressed: (){}
+                      ),
                     ),
+
                     Row(
 
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -230,10 +249,10 @@ class LoginPageState extends State<LoginPage> {
     User? user = await  _auth.signInWithEmailAndPassword( email, password);
 
     if(user != null){
-      print("User is successfully created");
-      Navigator.pushNamed(context, "/animation");
+      print("User is successfully Logged in");
+      Navigator.pushNamed(context, "animation");
     }else{
-      print("Some error occured");
+      print("Some error occurred");
     }
   }
 

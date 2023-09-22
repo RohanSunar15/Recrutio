@@ -1,7 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:Recrutio/LOGIN/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:Recrutio/consts.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class ForgetPasswordPage extends StatefulWidget {
   const ForgetPasswordPage({Key? key}) : super(key: key);
@@ -11,6 +15,21 @@ class ForgetPasswordPage extends StatefulWidget {
 }
 
 class ForgetPasswordPageState extends State<ForgetPasswordPage> {
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final TextEditingController _forgetPasswordTextController = TextEditingController();
+
+  void _forgetPasswordForm() async{
+    try{
+      await _auth.sendPasswordResetEmail(
+        email: _forgetPasswordTextController.text,
+      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+    }catch(error){
+      Fluttertoast.showToast(msg: error.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +101,7 @@ class ForgetPasswordPageState extends State<ForgetPasswordPage> {
 
                     // textfield of email
                     TextFormField(
+                      controller: _forgetPasswordTextController,
                       keyboardType: TextInputType.text,
                       style: const TextStyle(
                           color: Colors.black
@@ -116,7 +136,9 @@ class ForgetPasswordPageState extends State<ForgetPasswordPage> {
                             ),
                           ),
                         ),
-                        onPressed: (){}
+                        onPressed: (){
+                          _forgetPasswordForm();
+                        },
                     ),
                     const Text(
                       "",

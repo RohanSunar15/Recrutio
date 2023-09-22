@@ -1,9 +1,11 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'package:Recrutio/LOGIN/login.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:Recrutio/consts.dart';
 import 'package:Recrutio/authentication _repo/authentication_repo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 
 class SignupPage extends StatefulWidget {
   const SignupPage({Key? key}) : super(key: key);
@@ -17,10 +19,13 @@ class SignupPageState extends State<SignupPage> {
 
   final authenticationrepo _auth = authenticationrepo();
 
-  TextEditingController _email = TextEditingController();
-  TextEditingController _password = TextEditingController();
-  TextEditingController _name = TextEditingController();
-  TextEditingController _confirmpassword = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _confirmpassword = TextEditingController();
+
+
+
 
 
   @override
@@ -89,6 +94,7 @@ class SignupPageState extends State<SignupPage> {
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(60),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
                     ),
                     validator: (value) {
                       if (value!.isEmpty ||
@@ -126,6 +132,8 @@ class SignupPageState extends State<SignupPage> {
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(60),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
+
                     ),
                   ),
 
@@ -164,6 +172,8 @@ class SignupPageState extends State<SignupPage> {
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(60),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
+
                     ),
                   ),
                   TextFormField(
@@ -203,16 +213,18 @@ class SignupPageState extends State<SignupPage> {
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(60),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
                     ),
                   ),
+                  const SizedBox(height: 10,),
 
                   // its a button of continue
                   GestureDetector(
                     onTap: _signup,
                     child: Container(
                       alignment: Alignment.center,
-                      height: 60,
-                      width: double.infinity,
+                      height: 50,
+                      width: 350,
                       decoration: BoxDecoration(
                         color: const Color(0xff000000),
                         borderRadius: BorderRadius.circular(60),
@@ -225,11 +237,42 @@ class SignupPageState extends State<SignupPage> {
                         ),
                       ),
                     ),
+                  ),
 
+
+                  const Text(" ------------------- or ------------------- ",
+                    style: TextStyle(
+                        color: Color.fromRGBO(225, 225, 225, 70),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17
+                    ),
+                  ),
+
+                  CupertinoButton(
+                      child: Container(
+                        alignment: Alignment.center,
+                        height: 40,
+                        width: double.infinity,
+                        decoration:  BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/images/loginpage/google.png'),
+                            alignment: Alignment.centerLeft,
+                          ),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(60),
+                        ),
+                        child: const Text("Sign up with Google",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      onPressed: (){}
                   ),
 
                   Row(
-
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       const Text('Already have an account?',
@@ -242,6 +285,8 @@ class SignupPageState extends State<SignupPage> {
                             color: Colors.black,
                           ),
                         ),
+
+
                         onPressed: () {
                           // NAVIGATE TO THE LOGIN PAGE
                           Navigator.push(
@@ -272,7 +317,7 @@ class SignupPageState extends State<SignupPage> {
 
       if (user != null) {
         print("User is successfully created");
-        Navigator.pushNamed(context, "/login");
+        Navigator.pushNamed(context, "login");
       } else {
         print("Some error occurred");
       }

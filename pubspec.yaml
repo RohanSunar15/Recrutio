@@ -39,14 +39,22 @@ dependencies:
   flutter_native_splash: ^2.3.2
   firebase_core: ^2.15.1
   firebase_auth: ^4.9.0
+  firebase_database: ^10.2.6
   get: ^4.6.5
   firebase_storage: ^11.2.6
   salomon_bottom_bar: ^3.3.2
   lottie: ^2.6.0
+  fluttertoast: ^8.2.2
+  google_sign_in: ^6.1.5
+  line_awesome_flutter: ^2.0.0
+  image_picker: ^1.0.4
+  autocomplete_textfield: ^2.0.1
+  cloud_firestore: ^4.9.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
 
 
@@ -73,6 +81,11 @@ flutter:
     - assets/images/logo/logo.png
     - assets/images/loginpage/google.png
     - lib/ANIMATION/1.json
+    - assets/images/profile/usericon.png
+    - assets/images/profile/facebook.png
+    - assets/images/profile/github.png
+    - assets/images/profile/instagram.png
+    - assets/images/profile/Linkedin.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

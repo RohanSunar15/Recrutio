@@ -3,14 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<SearchPage> createState() => _SearchPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _SearchPageState extends State<SearchPage> {
   int _selectedIndex = 0; // Define and initialize _selectedIndex
 
 
@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text(
-            'Home',
+            'Search Page',
           ),
           centerTitle: true,
           backgroundColor: const Color(0xFF494946),
