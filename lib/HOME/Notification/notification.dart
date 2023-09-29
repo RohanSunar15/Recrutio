@@ -3,14 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
 
-class MessagePage extends StatefulWidget {
-  const MessagePage({super.key});
+class NotificationPage extends StatefulWidget {
+  const NotificationPage({super.key});
 
   @override
-  State<MessagePage> createState() => _MessagePageState();
+  State<NotificationPage> createState() => _NotificationPageState();
 }
 
-class _MessagePageState extends State<MessagePage> {
+class _NotificationPageState extends State<NotificationPage> {
   int _selectedIndex = 1; // Define and initialize _selectedIndex
 
 
@@ -29,7 +29,7 @@ class _MessagePageState extends State<MessagePage> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text(
-            'Message Page',
+            'Notification  Page',
           ),
           centerTitle: true,
           backgroundColor: const Color(0xFF494946),

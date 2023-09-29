@@ -1,5 +1,8 @@
+import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 
 void main() async {
@@ -11,11 +14,18 @@ void main() async {
 class AddJobPage extends StatefulWidget {
   const AddJobPage({Key? key}) : super(key: key);
 
+
   @override
   _AddJobPageState createState() => _AddJobPageState();
 }
 
 class _AddJobPageState extends State<AddJobPage> {
+
+  int _selectedIndex = 2;
+  // Firebase Realtime Database reference
+  final DatabaseReference _databaseReference =
+  FirebaseDatabase.instance.ref();
+
   String? _selectedWorkplaceType;
   String? _selectedJobType;
   String? _selectedLocation;
@@ -71,6 +81,50 @@ class _AddJobPageState extends State<AddJobPage> {
     );
   }
 
+
+  void _handlePostButtonPressed() {
+    setState(() {
+      _isPostButtonClicked = true;
+    });
+
+    if (_formKey.currentState!.validate()) {
+      // Get values from form fields and dropdowns
+      final companyName = _companyNameController.text;
+      final jobTitle = _selectedJobTitle;
+      final workplaceType = _selectedWorkplaceType;
+      final jobType = _selectedJobType;
+      final location = _selectedLocation;
+      final jobDescription = _jobDescription;
+      final contactNumber = _contactNumber;
+      final email = _email;
+
+      // Define a unique key for the job posting (you can use push() to generate one)
+      final jobKey = _databaseReference.child('jobs').push().key;
+
+      // Create a map of the job data
+      final jobData = {
+        'companyName': companyName,
+        'jobTitle': jobTitle,
+        'workplaceType': workplaceType,
+        'jobType': jobType,
+        'location': location,
+        'jobDescription': jobDescription,
+        'contactNumber': contactNumber,
+        'email': email,
+      };
+
+      // Store the job data in the Firebase Realtime Database under 'jobs' with the unique key
+      _databaseReference.child('jobs').child(jobKey!).set(jobData);
+
+      // Store the job data in Firebase Firestore
+      final firestore = FirebaseFirestore.instance;
+      firestore.collection('jobs').add(jobData);
+
+      // Data added successfully
+      print('Job data added to Firebase Realtime Database and Firestore.');
+    }
+  }
+
   InputDecoration _getInputDecoration(String hintText) {
     return InputDecoration(
       hintText: hintText,
@@ -97,47 +151,17 @@ class _AddJobPageState extends State<AddJobPage> {
     return RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$').hasMatch(value);
   }
 
-  void _handlePostButtonPressed() {
-    setState(() {
-      _isPostButtonClicked = true;
-    });
 
-    if (_formKey.currentState!.validate()) {
-      // Call the function to store data in Firestore
-     // _storeJobDataInFirestore();
-    }
-  }
 
-  // Initialize Firebase
-  // final FirebaseApp app = Firebase.apps.first;
-  // final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  //
-  // // Function to store job data in Firestore
-  // void _storeJobDataInFirestore() async {
-  //   try {
-  //     await firestore.collection('jobs').add({
-  //       'companyName': _companyNameController.text,
-  //       'jobTitle': _selectedJobTitle,
-  //       'workplaceType': _selectedWorkplaceType,
-  //       'jobType': _selectedJobType,
-  //       'location': _selectedLocation,
-  //       'jobDescription': _jobDescription,
-  //       'contactNumber': _contactNumber,
-  //       'email': _email,
-  //     });
-  //
-  //     // Data added successfully
-  //     print('Job data added to Firestore.');
-  //   } catch (e) {
-  //     // Handle errors
-  //     print('Error adding job data to Firestore: $e');
-  //   }
-  // }
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: const Color(0xFF494946),
         title: const Text('ADD JOB'),
       ),
       body: SingleChildScrollView(
@@ -288,14 +312,23 @@ class _AddJobPageState extends State<AddJobPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: ElevatedButton(
         onPressed: _handlePostButtonPressed,
-        child: const Icon(Icons.send), // Use a different icon like 'Icons.send'
+        child: const Icon(Icons.post_add_rounded , ),
+
+        // Use a different icon like 'Icons.send'
+      ),
+      bottomNavigationBar: BottomNavBar(
+        // Use your custom bottom navigation bar
+        selectedIndex: _selectedIndex,
+        onTabSelected: (int index) {
+          setState(() {
+            _selectedIndex = index; // Update the selected index
+          });
+        },
       ),
     );
   }
-
-  // ... (Rest of your code)
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -346,3 +379,5 @@ class _AddJobPageState extends State<AddJobPage> {
     );
   }
 }
+
+

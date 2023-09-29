@@ -1,11 +1,9 @@
-// ignore_for_file: avoid_print, use_build_context_synchronously
-
-import 'package:Recrutio/LOGIN/login.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:Recrutio/consts.dart';
-import 'package:Recrutio/authentication _repo/authentication_repo.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:Recrutio/LOGIN/login.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({Key? key}) : super(key: key);
@@ -17,16 +15,10 @@ class SignupPage extends StatefulWidget {
 class SignupPageState extends State<SignupPage> {
   bool _obscureText = true;
 
-  final authenticationrepo _auth = authenticationrepo();
-
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _name = TextEditingController();
   final TextEditingController _confirmpassword = TextEditingController();
-
-
-
-
 
   @override
   void dispose() {
@@ -42,12 +34,10 @@ class SignupPageState extends State<SignupPage> {
     final formkey = GlobalKey<FormState>();
 
     return Scaffold(
-
-      //background
       body: Container(
         height: double.maxFinite,
         width: double.maxFinite,
-        decoration: const BoxDecoration(
+        decoration:  const BoxDecoration(
           gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomCenter,
@@ -55,7 +45,7 @@ class SignupPageState extends State<SignupPage> {
         ),
         child: SingleChildScrollView(
           child: Form(
-            key: formkey, // key for form
+            key: formkey,
             child: Padding(
               padding: const EdgeInsets.all(25),
               child: OverflowBar(
@@ -69,7 +59,7 @@ class SignupPageState extends State<SignupPage> {
                   const SizedBox(height: 15,),
                   //header
                   const Text(
-                    "Sign up",
+                    "SIGNUP",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
@@ -217,10 +207,8 @@ class SignupPageState extends State<SignupPage> {
                     ),
                   ),
                   const SizedBox(height: 10,),
-
-                  // its a button of continue
                   GestureDetector(
-                    onTap: _signup,
+                    onTap: _signup ,
                     child: Container(
                       alignment: Alignment.center,
                       height: 50,
@@ -237,39 +225,6 @@ class SignupPageState extends State<SignupPage> {
                         ),
                       ),
                     ),
-                  ),
-
-
-                  const Text(" ------------------- or ------------------- ",
-                    style: TextStyle(
-                        color: Color.fromRGBO(225, 225, 225, 70),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17
-                    ),
-                  ),
-
-                  CupertinoButton(
-                      child: Container(
-                        alignment: Alignment.center,
-                        height: 40,
-                        width: double.infinity,
-                        decoration:  BoxDecoration(
-                          image: const DecorationImage(
-                            image: AssetImage('assets/images/loginpage/google.png'),
-                            alignment: Alignment.centerLeft,
-                          ),
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(60),
-                        ),
-                        child: const Text("Sign up with Google",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      onPressed: (){}
                   ),
 
                   Row(
@@ -301,7 +256,6 @@ class SignupPageState extends State<SignupPage> {
               ),
             ),
           ),
-
         ),
       ),
     );
@@ -311,24 +265,50 @@ class SignupPageState extends State<SignupPage> {
     String email = _email.text;
     String password = _password.text;
     String confirmPassword = _confirmpassword.text;
+    String name = _name.text;
 
     if (password == confirmPassword) {
-      User? user = await _auth.signUpWithEmailAndPassword(email, password);
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password);
 
-      if (user != null) {
+        // Create the user profile document
+        await createProfileDocument(userCredential.user!, name );
+
         print("User is successfully created");
+
+        // Navigate to the login page
         Navigator.pushNamed(context, "login");
-      } else {
-        print("Some error occurred");
+      } catch (e) {
+        print("Error occurred: $e");
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+          ),
+        );
       }
     } else {
       // Show an error message because the password and confirm password do not match
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:  Text('Password and Confirm Password do not match.'),
+          content: Text('Password and Confirm Password do not match.'),
         ),
       );
     }
   }
 
+  Future<void> createProfileDocument(User user,  name) async {
+    final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+    final String uid = user.uid;
+    String name = _name.text;
+
+    await usersCollection.doc(uid).set({
+      'uid': uid,
+      'name': name, // Initialize with default values
+      'email': user.email,
+      'isProfileComplete': false,
+    });
+  }
 }
+

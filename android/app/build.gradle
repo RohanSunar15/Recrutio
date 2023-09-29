@@ -40,7 +40,7 @@ android {
     }
 
     sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
+        main.java.srcDirs += 'src/main/ kotlin'
     }
 
     defaultConfig {
@@ -68,7 +68,10 @@ flutter {
     source '../..'
 }
 
+
 dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.3.1')
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "androidx.multidex:multidex:2.0.1"
 }
