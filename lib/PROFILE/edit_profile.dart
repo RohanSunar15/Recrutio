@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:io';
 import 'package:Recrutio/PROFILE/profile.dart';
@@ -92,9 +92,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late String _profession;
   late String _aboutMe;
   late String _githubLink;
-  late String _instagramLink;
   late String _linkedinLink;
-  late String _facebookLink;
   late List<ExperienceDetails> _experienceDetails = [];
   late List<EducationDetails> _educationDetails = [];
   String? _selectedProfession;
@@ -103,12 +101,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _aboutMeController = TextEditingController();
   final TextEditingController _githubLinkController = TextEditingController();
-  final TextEditingController _instagramLinkController = TextEditingController();
   final TextEditingController _linkedinLinkController = TextEditingController();
-  final TextEditingController _facebookLinkController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  File? _selectedImage;
 
 
 
@@ -116,6 +111,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image == null) {
+      // User canceled image selection, do nothing.
+      return;
+    }
 
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -129,7 +129,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       // Upload the image to Firebase Storage
-      await ref.putFile(File(image!.path));
+      await ref.putFile(File(image.path));
 
       // Get the download URL of the uploaded image
       final imageUrl = await ref.getDownloadURL();
@@ -173,9 +173,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _profession = data['profession'] ?? '';
           _aboutMe = data['aboutMe'] ?? '';
           _githubLink = data['githubLink'] ?? '';
-          _instagramLink = data['instagramLink'] ?? '';
           _linkedinLink = data['linkedinLink'] ?? '';
-          _facebookLink = data['facebookLink'] ?? '';
           _experienceDetails = (data['experienceDetails'] as List<dynamic>?)
               ?.map((item) => ExperienceDetails.fromMap(item))
               .toList() ??
@@ -205,8 +203,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         'profession': _selectedProfession,
         'aboutMe': _aboutMe,
         'githubLink': _githubLink,
-        'instagramLink': _instagramLink,
-        'facebookLink': _facebookLink,
         'linkedinLink': _linkedinLink,
         'experienceDetails': _experienceDetails.map((experience) => experience.toMap()).toList(),
         'educationDetails': _educationDetails.map((education) => education.toMap()).toList(),
@@ -242,8 +238,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     initializeFirebase();
     fetchProfileData();
-
+    fetchProfileImageUrl(); // Add this line to fetch the profile image URL.
   }
+
+// Add this function to fetch the profile image URL from Firestore.
+  Future<void> fetchProfileImageUrl() async {
+    final firestore = FirebaseFirestore.instance;
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      final userDoc = await firestore.collection('users').doc(user.uid).get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>;
+        final profileImageUrl = data['profileImageUrl'] as String?;
+        setState(() {
+          _profileImageUrl = profileImageUrl;
+        });
+      }
+    }
+  }
+
 
 
 
@@ -278,9 +293,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             shape: BoxShape.circle,
                             image: DecorationImage(
                               fit: BoxFit.cover,
-                              image: _selectedImage != null
-                                  ? FileImage(_selectedImage!) // Use FileImage for a local file
-                                  : const AssetImage('assets/images/profile/usericon.png') as ImageProvider, // Use AssetImage for an image from assets
+                              image: _profileImageUrl != null
+                                  ? NetworkImage(_profileImageUrl!)
+                                  : const AssetImage('assets/images/profile/usericon.png') as ImageProvider<Object>, // Use AssetImage for an image from assets
                             ),
                           ),
                         ),
@@ -365,34 +380,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     _validateLinkedInLink(value);
                   },
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _facebookLinkController,
-                  decoration: const InputDecoration(
-                    labelText: 'Facebook Link',
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _facebookLink = value;
-                    });
-                    _validateFacebookLink(value);
 
-                  },
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _instagramLinkController,
-                  decoration: const InputDecoration(
-                    labelText: 'Instagram Link',
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _instagramLink = value;
-                    });
-                    _validateInstagramLink(value);
-
-                  },
-                ),
                 const SizedBox(height: 20),
 
                 // Edit Experience Details
@@ -400,7 +388,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Column(
                   children: [
                     const Text(
-                        'Edit Experience Details:',
+                      'Edit Experience Details:',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -474,13 +462,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     ),
                                   ],
                                 ),
+
+                                const SizedBox(height: 20),
                                 ElevatedButton(
                                   onPressed: () {
                                     setState(() {
-                                      _educationDetails.removeAt(index);
+                                      _experienceDetails.removeAt(index);
                                     });
                                   },
-                                  child: const Text('Remove'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                  ),
+                                  child: const Text(
+                                      'Remove',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -501,7 +499,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           );
                         });
                       },
-                      child: const Text('Add Education'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[200],
+                      ),
+                      child: const Text(
+                          'Add Experience',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -586,13 +592,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     ),
                                   ],
                                 ),
+
+                                const SizedBox(height: 20),
                                 ElevatedButton(
                                   onPressed: () {
                                     setState(() {
                                       _educationDetails.removeAt(index);
                                     });
                                   },
-                                  child: const Text('Remove'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white
+                                  ),
+                                  child: const Text(
+                                    'Remove',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -613,7 +629,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           );
                         });
                       },
-                      child: const Text('Add Education'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[200],                      ),
+                      child: const Text(
+                        'Add Education',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -632,6 +655,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       );
                     }
                   },
+
                   child: Container(
                     alignment: Alignment.center,
                     height: 50,
@@ -642,14 +666,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       border: Border.all(
                         color: Colors.black,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 5,
-                          blurRadius: 7,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
                     ),
                     child: const Text(
                       "Save",
@@ -728,7 +744,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   //linkedin
   void _validateLinkedInLink(String url) {
     final validLinkedInUrlPattern = RegExp(
-      r'^https?://www\.linkedin\.com/in/[a-zA-Z0-9-]+/?$',
+      r'^https?://www.linkedin.com/in/[a-zA-Z0-9-]+/?$',
     );
 
 
@@ -742,46 +758,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       setState(() {
         _linkedinLink = '';
         _linkedinLinkController.clear();
-      });
-    }
-  }
-
-  //facebook
-  void _validateInstagramLink(String url) {
-    final validInstagramUrlPattern = RegExp(
-      r'^https://www.instagram.com/[a-zA-Z0-9_]+/?$',
-    );
-
-    if (!validInstagramUrlPattern.hasMatch(url)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid Instagram URL. Please enter a valid Instagram profile URL.'),
-        ),
-      );
-
-      setState(() {
-        _instagramLink = '';
-        _instagramLinkController.clear();
-      });
-    }
-  }
-
-  //instagram
-  void _validateFacebookLink(String url) {
-    final validFacebookUrlPattern = RegExp(
-      r'^https://www.facebook.com/[a-zA-Z0-9.-]+/?$',
-    );
-
-    if (!validFacebookUrlPattern.hasMatch(url)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid Facebook URL. Please enter a valid Facebook profile URL.'),
-        ),
-      );
-
-      setState(() {
-        _facebookLink = '';
-        _facebookLinkController.clear();
       });
     }
   }

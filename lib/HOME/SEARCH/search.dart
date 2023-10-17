@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
 
@@ -49,37 +51,6 @@ class _SearchPageState extends State<SearchPage> {
               _selectedIndex = index; // Update the selected index
             });
           },
-        ),
-        body: Column(
-          children: [
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      onChanged: (query) {
-                        setState(() {
-                          searchQuery = query;
-                        });
-                      },
-                      decoration: const InputDecoration(
-                        hintText: 'Search by company name, job title, etc.',
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: () {
-                      _performSearch(searchQuery);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            // Rest of your content goes here
-          ],
         ),
       ),
     );

@@ -11,7 +11,6 @@ import 'package:get/get.dart';
 import 'package:Recrutio/ANIMATION/lottieanimation.dart';
 import 'package:Recrutio/HOME/JOB/addjobpage.dart';
 import 'package:Recrutio/HOME/Notification/notification.dart';
-import 'package:Recrutio/PROFILE/edit_profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

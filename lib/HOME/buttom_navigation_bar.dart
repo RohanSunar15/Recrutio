@@ -2,6 +2,7 @@
 
 import 'package:Recrutio/HOME/JOB/addjobpage.dart';
 import 'package:Recrutio/HOME/MESSAGE/Message.dart';
+import 'package:Recrutio/HOME/Notification/notification.dart';
 import 'package:Recrutio/HOME/SEARCH/search.dart';
 import 'package:Recrutio/HOME/homescreen.dart';
 import 'package:Recrutio/PROFILE/profile.dart';
@@ -34,6 +35,7 @@ class BottomNavBarState extends State<BottomNavBar> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -52,7 +54,7 @@ class BottomNavBarState extends State<BottomNavBar> {
             Navigator.of(context).push(_pageTransitionBuilder(const ProfilePage())); // Navigate to the profile page with animation
           } else if (index == 1) { // 1 is the index of the "Notification" item
             await Future.delayed(const Duration(milliseconds: 250)); // Add a 1-second delay
-            Navigator.of(context).push(_pageTransitionBuilder(const ChatPage())); // Navigate to the notification page with animation
+            Navigator.of(context).push(_pageTransitionBuilder( NotificationPage())); // Navigate to the notification page with animation
           } else if (index == 2) { // 2 is the index of the "Add Job" item
             await Future.delayed(const Duration(milliseconds: 250)); // Add a 1-second delay
             Navigator.of(context).push(_pageTransitionBuilder(const AddJobPage())); // Navigate to the add job page with animation
@@ -70,8 +72,8 @@ class BottomNavBarState extends State<BottomNavBar> {
             title: const Text('Home',style: TextStyle(fontSize: 13),),
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Icons.message, size: 20),
-            title: const Text('Message',style: TextStyle(fontSize: 13),),
+            icon: const Icon(Icons.notifications, size: 20),
+            title: const Text('Notification',style: TextStyle(fontSize: 13),),
           ),
           SalomonBottomBarItem(
             icon: const Icon(Icons.add_circle, size: 20),

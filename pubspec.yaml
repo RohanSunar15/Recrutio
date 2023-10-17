@@ -57,6 +57,9 @@ dependencies:
   flutter_local_notifications: ^15.1.1
   intl: ^0.18.1
   google_fonts: ^6.1.0
+  permission_handler: ^11.0.0
+  awesome_notifications: ^0.8.2
+  palette_generator: ^0.3.3+3
 
 
 dev_dependencies:
@@ -90,10 +93,7 @@ flutter:
     - assets/images/loginpage/google.png
     - lib/ANIMATION/1.json
     - assets/images/profile/usericon.png
-    - assets/images/profile/facebook.png
-    - assets/images/profile/github.png
-    - assets/images/profile/instagram.png
-    - assets/images/profile/Linkedin.png
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

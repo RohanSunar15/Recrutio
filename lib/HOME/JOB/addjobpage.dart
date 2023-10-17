@@ -1,4 +1,5 @@
 import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
+import 'package:Recrutio/HOME/homescreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -122,6 +123,19 @@ class _AddJobPageState extends State<AddJobPage> {
 
       // Data added successfully
       print('Job data added to Firebase Realtime Database and Firestore.');
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const HomePage(),
+        ),
+      );
+
+      // Display a snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Job posted successfully!'),
+        ),
+      );
     }
   }
 
@@ -150,10 +164,6 @@ class _AddJobPageState extends State<AddJobPage> {
     if (value == null) return false;
     return RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$').hasMatch(value);
   }
-
-
-
-
 
 
   @override
@@ -314,9 +324,14 @@ class _AddJobPageState extends State<AddJobPage> {
       ),
       floatingActionButton: ElevatedButton(
         onPressed: _handlePostButtonPressed,
-        child: const Icon(Icons.post_add_rounded , ),
-
-        // Use a different icon like 'Icons.send'
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black, // Change the background color to black
+          // Change the text color to white
+        ),
+        child: const Text(
+          'Post Now', // Replace the icon with "Post Now" text
+          style: TextStyle(fontSize: 18), // Adjust text size if needed
+        ),
       ),
       bottomNavigationBar: BottomNavBar(
         // Use your custom bottom navigation bar

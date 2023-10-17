@@ -1,14 +1,14 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:Recrutio/LOGIN/login.dart';
+import 'package:Recrutio/LOGIN/login.dart'; // Import LoginPage from login.dart
 import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:Recrutio/PROFILE/edit_profile.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-
-
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -19,10 +19,10 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _selectedIndex = 4;
-  late String name = 'Loading...';// Declare 'name' variable
+  late String name = 'Loading...'; // Declare 'name' variable
   String? profileImageUrl;
 
-  String aboutMeText ='Tell us something about You';
+  String aboutMeText = 'Tell us something about You';
 
   late List<String> educationDetails = [
     'Update Your Education Details ',
@@ -33,31 +33,31 @@ class _ProfilePageState extends State<ProfilePage> {
   ];
 
   Future<void> initializeFirebase() async {
-    //firebase storage
-    FirebaseStorage.instance.ref();
+    await Firebase.initializeApp();
   }
 
 
-  Future<void> updateProfilePictureURL(String url) async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final userId = getCurrentUserId();
+// Add this function to fetch the profile image URL from Firestore.
+  Future<void> fetchProfileImageUrl() async {
+    final user = FirebaseAuth.instance.currentUser;
 
-      await firestore.collection('users').doc(userId).update({
-        'profileImageUrl': url,
-      });
-    } catch (e) {
-      print('Error updating profile picture URL: $e');
-      // Handle the error as needed
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>;
+        final profileImageUrl = data['profileImageUrl'] as String?;
+        setState(() {
+          this.profileImageUrl = profileImageUrl;
+        });
+      }
     }
   }
-
 
   // Fetch the name from Firebase
   Future<String> fetchName() async {
     final firestore = FirebaseFirestore.instance;
     final userDoc = await firestore.collection('users').doc(getCurrentUserId()).get();
-
 
     if (userDoc.exists) {
       final data = userDoc.data() as Map<String, dynamic>;
@@ -86,32 +86,11 @@ class _ProfilePageState extends State<ProfilePage> {
         name = fetchedName;
       });
     });
+    fetchProfileImageUrl(); // Call this function to fetch and update the profile image URL
 
+    fetchExperienceData();
+    fetchEducationData();
 
-// to fetch user profile data
-    Future<Map<String, dynamic>?> fetchUserProfileData() async {
-      final firestore = FirebaseFirestore.instance;
-      final userDoc = await firestore.collection('users').doc(getCurrentUserId()).get();
-
-      if (userDoc.exists) {
-        final data = userDoc.data() as Map<String, dynamic>;
-        return data;
-      } else {
-        return null; // User profile data not found
-      }
-    }
-    // Fetch user profile information (e.g., aboutMeText, educationDetails, experienceDetails)
-    fetchUserProfileData().then((userData) {
-      if (userData != null) {
-        setState(() {
-          aboutMeText = userData['aboutMe'] ?? aboutMeText;
-          educationDetails = userData['educationDetails'] ?? educationDetails;
-          experienceDetails = userData['experienceDetails'] != null
-              ? List<String>.from(userData['experienceDetails'])
-              : [];
-        });
-      }
-    });
   }
 
 
@@ -127,9 +106,88 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  // Fetch experience data from Firestore
+  Future<List<Map<String, dynamic>>> fetchExperienceData() async {
+    final firestore = FirebaseFirestore.instance;
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      try {
+        final userDoc = await firestore.collection('users').doc(user.uid).get();
+
+        if (userDoc.exists) {
+          final data = userDoc.data() as Map<String, dynamic>;
+          final experienceData = data['experienceDetails'] as List<dynamic>;
+
+          // Map the experience details to a list of maps with titles
+          final details = experienceData.map((exp) {
+            final title = exp['title'] ?? '';
+            final companyName = exp['companyName'] ?? '';
+            final post = exp['post'] ?? '';
+            final yearFrom = exp['yearFrom'] ?? '';
+            final yearTill = exp['yearTill'] ?? '';
+
+            return {
+              'title': title,
+              'companyName': companyName,
+              'post': post,
+              'yearFrom': yearFrom,
+              'yearTill': yearTill,
+            };
+          }).toList();
+
+          return details;
+                }
+      } catch (e) {
+        print("Error fetching experience data: $e");
+      }
+    }
+
+    return []; // Return an empty list if no data is available or an error occurs.
+  }
 
 
 
+
+  // Fetch education data from Firestore
+  Future<List<Map<String, dynamic>>>  fetchEducationData() async {
+    final firestore = FirebaseFirestore.instance;
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      try {
+        final userDoc = await firestore.collection('users').doc(user.uid).get();
+
+        if (userDoc.exists) {
+          final data = userDoc.data() as Map<String, dynamic>;
+          final educationData = data['educationDetails'] as List<dynamic>;
+
+          // Map the education details to a list of strings
+          final details = educationData.map((edu) {
+            final title = edu['title'] ?? '';
+            final institutionName = edu['institutionName'] ?? '';
+            final degree = edu['degree'] ?? '';
+            final yearFrom = edu['yearFrom'] ?? '';
+            final yearTill = edu['yearTill'] ?? '';
+
+            return {
+              'title': title,
+              'InstitutionName': institutionName,
+              'Degree': degree,
+              'yearFrom': yearFrom,
+              'yearTill': yearTill,
+            };
+          }).toList();
+
+          return details;
+        }
+      } catch (e) {
+        print("Error fetching experience data: $e");
+      }
+    }
+
+    return []; // Return an empty list if no data is available or an error occurs.
+  }
 
 
   @override
@@ -141,7 +199,6 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         backgroundColor: const Color(0xFF494946),
         title: const Text('Profile'),
-
       ),
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedIndex,
@@ -151,9 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
           });
         },
       ),
-
       body: Container(
-
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.white24, Colors.white],
@@ -177,14 +232,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       image: profileImageUrl != null
-                          ? NetworkImage(profileImageUrl!) // Cast to ImageProvider<Object>
-                          : const AssetImage('assets/images/profile/usericon.png') as ImageProvider<Object>, // Cast to ImageProvider<Object>
+                          ? NetworkImage(profileImageUrl!)
+                          : const AssetImage('assets/images/profile/usericon.png') as ImageProvider<Object>,
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-                Text( name,
+                Text(
+                  name,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -198,7 +253,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     } else if (snapshot.hasError) {
                       return Text('Error: ${snapshot.error}');
                     } else if (!snapshot.hasData || snapshot.data == null) {
-                      return const Text('Profession not found'); // Handle case where data is not available.
+                      return const Text('Profession not found');
                     } else {
                       final profession = snapshot.data!['profession'] as String;
                       return Text(
@@ -211,7 +266,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
                   },
                 ),
-
                 const SizedBox(height: 20),
                 SizedBox(
                   width: MediaQuery.of(context).size.width - 40,
@@ -244,35 +298,157 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 // Connected Account Section
                 SizedBox(
                   width: MediaQuery.of(context).size.width - 40,
-                  child: const Card(
+                  child: Card(
                     child: Padding(
-                      padding: EdgeInsets.all(15),
+                      padding: const EdgeInsets.all(15),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Connected Account',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 5),
+                          const SizedBox(height: 5),
                           Row(
-
                             children: [
-                              SizedBox(height: 10,),
-                              IconButton( icon: Icon(LineAwesomeIcons.linkedin, size: 35,color: Colors.blue,), onPressed: ColorScheme.dark),
-                              IconButton( icon: Icon(LineAwesomeIcons.github, size: 35,color: Colors.black,), onPressed: ColorScheme.dark),
-                              IconButton( icon: Icon(LineAwesomeIcons.twitter, size: 35,color: Colors.blue,), onPressed: ColorScheme.dark),
-                              IconButton( icon: Icon(LineAwesomeIcons.facebook , size: 35,color: Colors.lightBlue,), onPressed: ColorScheme.dark),
-                              IconButton( icon: Icon(LineAwesomeIcons.instagram, size: 35,color: Colors.pinkAccent,), onPressed: ColorScheme.dark),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              IconButton(
+                                icon: const Icon(LineAwesomeIcons.linkedin, size: 35, color: Colors.blue),
+                                onPressed: () async {
+                                  final userProfileData = await fetchUserProfileData();
+                                  final linkedinProfileUrl = userProfileData?['linkedinProfile'];
+
+                                  if (linkedinProfileUrl != null) {
+                                    try {
+                                      await launchUrl(linkedinProfileUrl);
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Error: $e'),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('LinkedIn profile URL is missing or invalid.'),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(LineAwesomeIcons.github, size: 35, color: Colors.black),
+                                onPressed: () async {
+                                  final userProfileData = await fetchUserProfileData();
+                                  final githubProfileUrl = userProfileData?['githubProfile'];
+
+                                  if (githubProfileUrl != null) {
+                                    try {
+                                      await launchUrl(githubProfileUrl);
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Error: $e'),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('GitHub profile URL is missing or invalid.'),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
                             ],
-                          )
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width - 40,
+                  child: Card(
+                    shadowColor: Colors.black12,
+                    child: Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Experience',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          FutureBuilder(
+                            future: fetchExperienceData(),
+                            builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Text('Loading...'); // Show a loading indicator while fetching data.
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
+                                return const Text('No experience data found');
+                              } else {
+                                final experienceData = snapshot.data!;
+                                return Column(
+                                  children: experienceData.map((experience) {
+                                    final title = experience['title'];
+                                    final companyName = experience['companyName'] ?? '';
+                                    final post = experience['post'] ?? '';
+                                    final yearFrom = experience['yearFrom'] ?? '';
+                                    final yearTill = experience['yearTill'] ?? '';
+
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          title, // Display the title for each experience
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8), // Add some spacing between the title and values
+                                        Text(
+                                          "Company Name: $companyName",
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        Text(
+                                          "Post: $post",
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        Text(
+                                          "Year: $yearFrom - $yearTill",
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 20),
+                                      ],
+                                    );
+                                  }).toList(),
+                                );
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -299,56 +475,65 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          for (String detail in educationDetails)
-                            Text(detail ,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width - 40,
-                  child: Card(
-                    shadowColor: Colors.black12,
-                    child: Padding(
-                      padding: const EdgeInsets.all(15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Experience',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          for (String detail in experienceDetails)
-                            Text(
-                              detail,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
+                            FutureBuilder(
+                              future: fetchEducationData(),
+                              builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Text('Loading...'); // Show a loading indicator while fetching data.
+                                } else if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
+                                } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
+                                  return const Text('No education data found');
+                                } else {
+                                  final experienceData = snapshot.data!;
+                                  return Column(
+                                    children: experienceData.map((experience) {
+                                      final title = experience['title'];
+                                      final institutionName  = experience['institutionName'] ?? '';
+                                      final degree = experience['degree'] ?? '';
+                                      final yearFrom = experience['yearFrom'] ?? '';
+                                      final yearTill = experience['yearTill'] ?? '';
 
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            title, // Display the title for each experience
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8), // Add some spacing between the title and values
+                                          Text(
+                                            "Company Name: $institutionName",
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
+                                          Text(
+                                            "Degree: $degree",
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
+                                          Text(
+                                            "Year: $yearFrom - $yearTill",
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
+                                          const SizedBox(height: 20),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  );
+                                }
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const EditProfileScreen()),
@@ -374,12 +559,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 5,),
+                const SizedBox(height: 5),
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      MaterialPageRoute(builder: (context) => const LoginPage()), // Navigate to LoginPage
                     );
                   },
                   child: Container(
@@ -410,5 +595,4 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
-  }
+}

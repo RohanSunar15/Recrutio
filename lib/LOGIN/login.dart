@@ -1,9 +1,12 @@
-import 'package:Recrutio/ForgetPassword/forgetpassword.dart';
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'package:Recrutio/SIGNUP/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:Recrutio/consts.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -14,28 +17,76 @@ class LoginPage extends StatefulWidget {
 
 class LoginPageState extends State<LoginPage> {
   bool _obscureText = true;
-
-  final FirebaseAuth _auth = FirebaseAuth.instance; // Use FirebaseAuth for authentication
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
 
   @override
-  void dispose() {
-    _email.dispose();
-    _password.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _initializeFirebaseMessaging();
   }
+
+
+
+  // Initialize Firebase Messaging
+  void _initializeFirebaseMessaging() async {
+    // Request notification permission
+    final status = await Permission.notification.request();
+
+    if (status.isGranted) {
+      // Permission granted
+      _firebaseMessaging.getToken().then((fcmToken) async {
+        print("FCM Token: $fcmToken");
+        // Save the FCM token to your user's account on your server/database.
+
+        // You can send this token to your server to associate it with the user.
+      });
+
+      // Handle incoming messages when the app is in the foreground
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        // Handle the incoming message when the app is open.
+        print("Received message: ${message.notification?.title}");
+      });
+    } else {
+      // Permission denied
+      print("Notification permission denied");
+    }
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Handle the message when the app is in the background and opened by tapping the notification
+      print('Tapped on notification: ${message.notification?.title}');
+    });
+  }
+
+  void sendTokenToServer(String token) async {
+    final response = await http.post(
+      Uri.parse('https://your-server.com/api/store-fcm-token'),
+      body: {'token': token},
+    );
+
+    if (response.statusCode == 200) {
+      print('FCM Token sent to server successfully.');
+    } else {
+      print('Failed to send FCM Token to server.');
+    }
+  }
+
+
 
   Future<void> _login() async {
     String email = _email.text;
     String password = _password.text;
 
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
       User? user = userCredential.user;
 
       if (user != null) {
         print("User is successfully logged in");
+        // Navigate to the next screen after successful login
         Navigator.pushNamed(context, "animation");
       } else {
         print("Some error occurred");
@@ -69,17 +120,15 @@ class LoginPageState extends State<LoginPage> {
       // Handle other errors
       print("Authentication error: $e");
       // Show an error message to the user
-      final snackBar = SnackBar(
+      const snackBar = SnackBar(
         content: Text("Authentication failed. Please check your email and password."),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
 
     return Scaffold(
       body: Container(
@@ -183,12 +232,8 @@ class LoginPageState extends State<LoginPage> {
                         ),
                         child: TextButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ForgetPasswordPage(),
-                              ),
-                            );
+                            // Navigate to the "Forgot Password" screen
+                            // Navigator.pushNamed(context, "forgot_password_route");
                           },
                           child: const Text(
                             "Forget Password?",
@@ -233,11 +278,10 @@ class LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SignupPage(),
-                              ),
+                            // Navigate to the "Sign Up" screen
+                            // Navigator.pushNamed(context, "sign_up_route");
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupPage(),
+                            ),
                             );
                           },
                         )
