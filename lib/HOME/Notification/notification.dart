@@ -1,59 +1,58 @@
-// ignore_for_file: avoid_print
-
+import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key});
+  const NotificationPage({Key? key}) : super(key: key);
 
   @override
-  State<NotificationPage> createState() => _NotificationPageState();
+  _NotificationPageState createState() => _NotificationPageState();
 }
 
 class _NotificationPageState extends State<NotificationPage> {
+  String? userProfession = 'Software Developer'; // Replace with the user's selected profession
+  int _selectedIndex = 1;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: const Color(0xFF494946),
-        title: const Text(
-          'Notifications',
-          style: TextStyle(fontSize: 22),
-        ),
+        title: const Text('Notifications'),
       ),
-      body: const SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Card(
-                elevation: 2,
+      bottomNavigationBar: BottomNavBar(
+        selectedIndex: _selectedIndex,
+        onTabSelected: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('jobPostings').snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          }
+
+          final jobPostings = snapshot.data!.docs
+              .where((jobPosting) => jobPosting['profession'] == userProfession)
+              .toList();
+
+          return ListView.builder(
+            itemCount: jobPostings.length,
+            itemBuilder: (context, index) {
+              final jobPosting = jobPostings[index].data() as Map<String, dynamic>;
+              final jobTitle = jobPosting['title'];
+              final jobDescription = jobPosting['description'];
+
+              return Card(
                 child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.blue,
-                    child: Icon(
-                      Icons.work_outline_rounded,
-                      color: Colors.white,
-                    ),
-                  ),
-                  title: Text(
-                    'New Job Posted',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'A new job has been posted near your location.',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                  title: Text(jobTitle),
+                  subtitle: Text(jobDescription),
                 ),
-              ),
-            ),
-            // Add more notification cards here
-          ],
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }

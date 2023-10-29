@@ -303,12 +303,18 @@ class SignupPageState extends State<SignupPage> {
     final String uid = user.uid;
     String name = _name.text;
 
+
     await usersCollection.doc(uid).set({
       'uid': uid,
       'name': name, // Initialize with default values
       'email': user.email,
       'isProfileComplete': false,
+      'aboutMe': '', // Initialize with an empty string
+      'githubLink': '', // Initialize with an empty string
+      'linkedinLink': '',
+      'experienceDetails':'',
+      'educationDetails': '',
+
     });
   }
 }
-

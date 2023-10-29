@@ -158,10 +158,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
 
 
-  Future<void> fetchProfileData() async {
+  void fetchProfileData() async {
     final firestore = FirebaseFirestore.instance;
     final user = FirebaseAuth.instance.currentUser;
-
 
     if (user != null) {
       final userDoc = await firestore.collection('users').doc(user.uid).get();
@@ -169,26 +168,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (userDoc.exists) {
         final data = userDoc.data() as Map<String, dynamic>;
         setState(() {
-          _name = data['name'] ?? '';
+          // Handle null or missing data with the null-aware operator `??`
+          _name = data['name'] ?? ''; // Provide a default value if 'name' is null
           _profession = data['profession'] ?? '';
           _aboutMe = data['aboutMe'] ?? '';
           _githubLink = data['githubLink'] ?? '';
           _linkedinLink = data['linkedinLink'] ?? '';
+
+          // Ensure you have default values for lists and handle null appropriately
           _experienceDetails = (data['experienceDetails'] as List<dynamic>?)
               ?.map((item) => ExperienceDetails.fromMap(item))
-              .toList() ??
-              [];
+              .toList() ?? [];
+
           _educationDetails = (data['educationDetails'] as List<dynamic>?)
               ?.map((item) => EducationDetails.fromMap(item))
-              .toList() ??
-              [];
+              .toList() ?? [];
 
           _selectedProfession = _profession.isNotEmpty ? _profession : _professions[0];
-
         });
       }
     }
   }
+
 
   // Function to save edited profile data to Firebase
   Future<void> saveProfileDataToFirebase() async {
@@ -353,45 +354,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     });
                   },
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _githubLinkController,
-                  decoration: const InputDecoration(
-                    labelText: 'GitHub Link',
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _githubLink = value;
-                    });
-                    _validateGitHubLink(value);
-                  },
-                ),
-
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _linkedinLinkController,
-                  decoration: const InputDecoration(
-                    labelText: 'LinkedIn Link',
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _linkedinLink = value;
-                    });
-                    _validateLinkedInLink(value);
-                  },
-                ),
-
-                const SizedBox(height: 20),
 
                 // Edit Experience Details
                 const SizedBox(height: 20),
                 Column(
                   children: [
-                    const Text(
-                      'Edit Experience Details:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Edit Experience Details:',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -486,29 +461,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         );
                       }).toList(),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _experienceDetails.add(
-                            ExperienceDetails(
-                              companyName: '',
-                              post: '',
-                              yearFrom: 0,
-                              yearTill: 0,
-                            ),
-                          );
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[200],
-                      ),
-                      child: const Text(
+                    Align(
+                      alignment: Alignment.center,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _experienceDetails.add(
+                              ExperienceDetails(
+                                companyName: '',
+                                post: '',
+                                yearFrom: 0,
+                                yearTill: 0,
+                              ),
+                            );
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[200],
+                        ),
+                        child: const Text(
                           'Add Experience',
-                        style: TextStyle(
-                          color: Colors.black,
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
                         ),
                       ),
-                    ),
+                    )
                   ],
                 ),
 
@@ -517,13 +495,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 20),
                 Column(
                   children: [
-                    const Text(
-                      'Edit Education Details:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Edit Education Details:',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+
                     const SizedBox(height: 10),
                     Column(
                       children: _educationDetails.asMap().entries.map((entry) {
@@ -616,66 +598,72 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         );
                       }).toList(),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _educationDetails.add(
-                            EducationDetails(
-                              institutionName: '',
-                              degree: '',
-                              yearFrom: 0,
-                              yearTill: 0,
-                            ),
-                          );
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[200],                      ),
-                      child: const Text(
-                        'Add Education',
-                        style: TextStyle(
-                          color: Colors.black,
+                    Align(
+                      alignment: Alignment.center,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _educationDetails.add(
+                              EducationDetails(
+                                institutionName: '',
+                                degree: '',
+                                yearFrom: 0,
+                                yearTill: 0,
+                              ),
+                            );
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[200],
+                        ),
+                        child: const Text(
+                          'Add Education',
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
                         ),
                       ),
-                    ),
+                    )
+
                   ],
                 ),
                 const SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    if (validateFields()) {
-                      // Save the profile data to Firebase.
-                      saveProfileDataToFirebase();
-                    } else {
-                      // Show an error message or take other action.
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please fill in all required fields.'),
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (validateFields()) {
+                        // Save the profile data to Firebase.
+                        saveProfileDataToFirebase();
+                      } else {
+                        // Show an error message or take other action.
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please fill in all required fields.'),
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      height: 50,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(60),
+                        border: Border.all(
+                          color: Colors.black,
                         ),
-                      );
-                    }
-                  },
-
-                  child: Container(
-                    alignment: Alignment.center,
-                    height: 50,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(60),
-                      border: Border.all(
-                        color: Colors.black,
                       ),
-                    ),
-                    child: const Text(
-                      "Save",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                      child: const Text(
+                        "Save",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                )
               ],
             ),
           ),
@@ -716,51 +704,4 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     return false; // If none of the conditions are met, return false.
   }
-
-
-
-  // github
-  void _validateGitHubLink(String url) {
-    final validGitHubUrlPattern = RegExp(
-      r'^github.com/[a-zA-Z0-9-]+/?$',
-    );
-
-    if (!validGitHubUrlPattern.hasMatch(url)) {
-      // Invalid GitHub URL
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid GitHub URL. Please enter a valid GitHub profile URL.'),
-        ),
-      );
-
-      // Clear the field or take appropriate action
-      setState(() {
-        _githubLink = '';
-        _githubLinkController.clear();
-      });
-    }
-  }
-
-  //linkedin
-  void _validateLinkedInLink(String url) {
-    final validLinkedInUrlPattern = RegExp(
-      r'^https?://www.linkedin.com/in/[a-zA-Z0-9-]+/?$',
-    );
-
-
-    if (!validLinkedInUrlPattern.hasMatch(url)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid LinkedIn URL. Please enter a valid LinkedIn profile URL.'),
-        ),
-      );
-
-      setState(() {
-        _linkedinLink = '';
-        _linkedinLinkController.clear();
-      });
-    }
-  }
-
-
 }

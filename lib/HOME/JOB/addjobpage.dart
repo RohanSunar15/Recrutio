@@ -1,10 +1,11 @@
 import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
-import 'package:Recrutio/HOME/homescreen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+
+import '../Homescreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,17 +16,14 @@ void main() async {
 class AddJobPage extends StatefulWidget {
   const AddJobPage({Key? key}) : super(key: key);
 
-
   @override
   _AddJobPageState createState() => _AddJobPageState();
 }
 
 class _AddJobPageState extends State<AddJobPage> {
-
   int _selectedIndex = 2;
   // Firebase Realtime Database reference
-  final DatabaseReference _databaseReference =
-  FirebaseDatabase.instance.ref();
+  final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref();
 
   String? _selectedWorkplaceType;
   String? _selectedJobType;
@@ -40,7 +38,53 @@ class _AddJobPageState extends State<AddJobPage> {
     'Assistant',
     'Full-Stack Developer',
     'Associate',
-    // ... (your job titles)
+    'Administrative Assistant',
+    'Account Manager',
+    'IT Specialist',
+    'IT Consultant',
+    'Web Developer',
+    'Web Designer',
+    'Graphic Designer',
+    'App Developer',
+    'Cloud Solutions Architect',
+    'Photo Editor',
+    'Quality Control Inspector',
+    'Supply Chain Manager',
+    'Customer Service Representative',
+    'HR Manager',
+    'Auditor',
+    'Social Media Manager',
+    'Medical Technologist',
+    'Technical Program Manager',
+    'Software Development Engineer in Test (SDET)',
+    'Technical Program Manager',
+    'Technical Support Engineer',
+    'Security Engineer',
+    'Product Manager',
+    'Graphic Designer',
+    'Strategy Analyst',
+    'Content Writer',
+    'Machine Operator',
+    'Curriculum Developer',
+    'Video Editor',
+    'Backend Web Developer',
+    'Frontend Web Developer',
+    'IOS App Developer',
+    'Application Tester',
+    'Software Tester',
+    'Machine Learning Specialist',
+    'Data Entry Clerk',
+    'Database Administrator',
+    'Data Specialist',
+    'Data Management Specialist',
+    'Software Engineer',
+    'project Manager',
+    'Game Developer',
+    'Summer Intern',
+    'AI Developer',
+    'AI Engineer',
+    'Blogger',
+    'Financial Analyst',
     'CA',
   ];
 
@@ -59,7 +103,12 @@ class _AddJobPageState extends State<AddJobPage> {
     _jobTitleTextField = SimpleAutoCompleteTextField(
       key: GlobalKey(),
       suggestions: _jobTitles,
-      textChanged: (text) {},
+      textChanged: (text) {
+        List<String> filteredTitles = _jobTitles
+            .where((title) => title.toLowerCase().contains(text.toLowerCase()))
+            .toList();
+        _jobTitleTextField.updateSuggestions(filteredTitles);
+      },
       clearOnSubmit: false,
       textSubmitted: (text) {
         setState(() {
@@ -81,7 +130,6 @@ class _AddJobPageState extends State<AddJobPage> {
       ),
     );
   }
-
 
   void _handlePostButtonPressed() {
     setState(() {
@@ -130,7 +178,7 @@ class _AddJobPageState extends State<AddJobPage> {
         ),
       );
 
-      // Display a snackbar
+      // Display a snack-bar
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Job posted successfully!'),
@@ -155,16 +203,6 @@ class _AddJobPageState extends State<AddJobPage> {
     );
   }
 
-  bool _isValidPhoneNumber(String? value) {
-    if (value == null) return false;
-    return RegExp(r'^[0-9]{10}$').hasMatch(value);
-  }
-
-  bool _isValidEmail(String? value) {
-    if (value == null) return false;
-    return RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$').hasMatch(value);
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -173,6 +211,14 @@ class _AddJobPageState extends State<AddJobPage> {
         centerTitle: true,
         backgroundColor: const Color(0xFF494946),
         title: const Text('ADD JOB'),
+      ),
+      bottomNavigationBar: BottomNavBar(
+        selectedIndex: _selectedIndex,
+        onTabSelected: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
       ),
       body: SingleChildScrollView(
         child: Form(
@@ -326,22 +372,13 @@ class _AddJobPageState extends State<AddJobPage> {
         onPressed: _handlePostButtonPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black, // Change the background color to black
-          // Change the text color to white
         ),
         child: const Text(
-          'Post Now', // Replace the icon with "Post Now" text
-          style: TextStyle(fontSize: 18), // Adjust text size if needed
+          'Post Now',
+          style: TextStyle(fontSize: 18),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
-        // Use your custom bottom navigation bar
-        selectedIndex: _selectedIndex,
-        onTabSelected: (int index) {
-          setState(() {
-            _selectedIndex = index; // Update the selected index
-          });
-        },
-      ),
+
     );
   }
 
@@ -376,7 +413,7 @@ class _AddJobPageState extends State<AddJobPage> {
     required String hintText,
     String? Function(String?)? validator,
   }) {
-    return Container(
+    return SizedBox(
       width: 480,
       height: 50,
       child: DropdownButtonFormField<String>(
@@ -393,6 +430,15 @@ class _AddJobPageState extends State<AddJobPage> {
       ),
     );
   }
-}
 
+  bool _isValidPhoneNumber(String? value) {
+    if (value == null) return false;
+    return RegExp(r'^[0-9]{10}$').hasMatch(value);
+  }
+
+  bool _isValidEmail(String? value) {
+    if (value == null) return false;
+    return RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$').hasMatch(value);
+  }
+}
 

@@ -54,7 +54,7 @@ class BottomNavBarState extends State<BottomNavBar> {
             Navigator.of(context).push(_pageTransitionBuilder(const ProfilePage())); // Navigate to the profile page with animation
           } else if (index == 1) { // 1 is the index of the "Notification" item
             await Future.delayed(const Duration(milliseconds: 250)); // Add a 1-second delay
-            Navigator.of(context).push(_pageTransitionBuilder( NotificationPage())); // Navigate to the notification page with animation
+            Navigator.of(context).push(_pageTransitionBuilder(const NotificationPage())); // Navigate to the notification page with animation
           } else if (index == 2) { // 2 is the index of the "Add Job" item
             await Future.delayed(const Duration(milliseconds: 250)); // Add a 1-second delay
             Navigator.of(context).push(_pageTransitionBuilder(const AddJobPage())); // Navigate to the add job page with animation

@@ -1,56 +1,89 @@
-// ignore_for_file: avoid_print
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/material.dart';
+import 'package:Recrutio/HOME/SEARCH/showprofile.dart';
 import 'package:Recrutio/HOME/buttom_navigation_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 
   @override
-  State<SearchPage> createState() => _SearchPageState();
+  _SearchPageState createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
-  int _selectedIndex = 3;
+  List searchResult = [];
 
-  String searchQuery = 'Search query';
+  void searchFromFirebase(String query ) async{
 
-  void _performSearch(String query) {
-    // Implement your search logic here
-    print("Searching for: $query");
-    // Update the UI with search results if applicable
+    final result = await FirebaseFirestore.instance.
+    collection('users').
+    where('name',
+      isEqualTo: query,
+    ).get();
+
+    setState(() {
+      searchResult = result.docs.map((e) => e.data()).toList();
+
+    });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.white, Colors.white70],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomRight,
-          stops: [0.2, 0.9],
-        ),
+    int _selectedIndex = 3;
+    return Scaffold(
+      appBar: AppBar(
+        title: null, // Remove the default title
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            'Search Page',
-          ),
-          centerTitle: true,
-          backgroundColor: const Color(0xFF494946),
-        ),
-        bottomNavigationBar: BottomNavBar(
-          // Use your custom bottom navigation bar
-          selectedIndex: _selectedIndex,
-          onTabSelected: (int index) {
-            setState(() {
-              _selectedIndex = index; // Update the selected index
-            });
-          },
+      bottomNavigationBar: BottomNavBar(
+        selectedIndex: _selectedIndex,
+        onTabSelected: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+
+              decoration: const InputDecoration(
+                hintText: 'Search by Name, Company Name, or Job Title',
+                suffixIcon: Icon(Icons.search), // Search icon on the right side
+              ),
+              onChanged: (query){
+                searchFromFirebase(query);
+              },
+            ),
+            const SizedBox(height: 20),
+            const Text('Search Results:'),
+            Expanded(
+              child: ListView.builder(
+                itemCount: searchResult.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      // Navigate to the profile page when a result is tapped
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ShowProfilePage(userData: searchResult[index]),
+                        ),
+                      );
+                    },
+                    child: ListTile(
+                      title: Text(searchResult[index]['name']),
+                      subtitle: Text(searchResult[index]['profession']),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

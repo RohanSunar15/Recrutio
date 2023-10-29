@@ -1,12 +1,12 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
-import 'package:file_picker/file_picker.dart';
 import '../LOGIN/login.dart';
 import 'buttom_navigation_bar.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -16,13 +16,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0; // Define and initialize _selectedIndex
-
+  int _selectedIndex = 0;
   final auth = FirebaseAuth.instance;
   final ref = FirebaseDatabase.instance.ref('jobs');
-
-  // Adjust the height of the box here
   double boxHeight = 100.0;
+  File? _selectedFile; // Store the selected file
+  bool _errorShown = false; // Flag to track if the error message is shown
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +36,9 @@ class _HomePageState extends State<HomePage> {
       ),
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(0), // Remove AppBar
+          preferredSize: Size.fromHeight(0),
           child: AppBar(
-            automaticallyImplyLeading: false, // Remove back button
+            automaticallyImplyLeading: false,
           ),
         ),
         body: Column(
@@ -51,15 +50,15 @@ class _HomePageState extends State<HomePage> {
                   size: 29,
                 ),
                 onPressed: () {
-                  _logout(context); // Show the logout confirmation dialog
+                  _logout(context);
                 },
               ),
               title: const Text(
                 "Here's Your Dream Job",
                 style: TextStyle(
-                  fontSize: 28, // Increase the font size
-                  color: Colors.blue, // Change the text color
-                  fontWeight: FontWeight.bold, // Add FontWeight if needed
+                  fontSize: 28,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -67,17 +66,16 @@ class _HomePageState extends State<HomePage> {
               child: FirebaseAnimatedList(
                 query: ref,
                 itemBuilder: (context, snapshot, animation, index) {
-                  // Wrap each item in a Card with adjustable height
                   return Card(
-                    elevation: 2, // Add elevation for a shadow effect
-                    margin: const EdgeInsets.all(10), // Adjust the margin as needed
+                    elevation: 2,
+                    margin: const EdgeInsets.all(10),
                     child: InkWell(
                       onTap: () {
                         _showJobDetails(context, snapshot);
                       },
                       child: Container(
-                        height: boxHeight, // Set the desired height for the box
-                        padding: const EdgeInsets.all(16.0), // Add padding for content
+                        height: boxHeight,
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -88,7 +86,7 @@ class _HomePageState extends State<HomePage> {
                                 snapshot.child('companyName').value.toString(),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 20, // Optional: Make the company name bold
+                                  fontSize: 20,
                                 ),
                               ),
                             ),
@@ -99,11 +97,10 @@ class _HomePageState extends State<HomePage> {
                                 snapshot.child('jobTitle').value.toString(),
                                 style: const TextStyle(
                                   fontStyle: FontStyle.italic,
-                                  fontSize: 18, // Optional: Make the job title italic
+                                  fontSize: 18,
                                 ),
                               ),
                             ),
-                            // You can add more information here
                           ],
                         ),
                       ),
@@ -115,11 +112,10 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         bottomNavigationBar: BottomNavBar(
-          // Use your custom bottom navigation bar
           selectedIndex: _selectedIndex,
           onTabSelected: (int index) {
             setState(() {
-              _selectedIndex = index; // Update the selected index
+              _selectedIndex = index;
             });
           },
         ),
@@ -133,16 +129,16 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.black,
+          backgroundColor: Colors.white,
           title: const Text(
             'Sign Out',
-            style: TextStyle(color: Colors.white, fontSize: 26),
+            style: TextStyle(color: Colors.black, fontSize: 26),
           ),
           content: const Text(
             'DO YOU WANT TO SIGN OUT?',
             style: TextStyle(
               color: Colors.red,
-              fontSize: 20,
+              fontSize: 17,
             ),
           ),
           actions: [
@@ -176,19 +172,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showJobDetails(BuildContext context, DataSnapshot snapshot) {
-    // Extract job details from the snapshot
-    String companyName = snapshot.child('companyName').value.toString();
-    String jobTitle = snapshot.child('jobTitle').value.toString();
-    String workplaceType = snapshot.child('workplaceType').value.toString();
-    String jobType = snapshot.child('jobType').value.toString();
-    String location = snapshot.child('location').value.toString();
-    String jobDescription = snapshot.child('jobDescription').value.toString();
-    String contactNumber = snapshot.child('contactNumber').value.toString();
-    String email = snapshot.child('email').value.toString();
-
     showDialog(
       context: context,
-      barrierDismissible: true, // Allow dismissing dialog by tapping outside
+      barrierDismissible: true,
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -196,55 +182,46 @@ class _HomePageState extends State<HomePage> {
           ),
           elevation: 0,
           backgroundColor: Colors.transparent,
-          child: contentBox(
-            context,
-            companyName,
-            jobTitle,
-            workplaceType,
-            jobType,
-            location,
-            jobDescription,
-            contactNumber,
-            email,
-          ),
+          child: contentBox(context, snapshot),
         );
       },
     );
   }
 
-  void _showApplyDialog(BuildContext context) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom, // Specify the file type you want to pick (e.g., FileType.any for any file type)
-      allowedExtensions: ['pdf'], // Specify allowed file extensions (e.g., PDF)
-    );
-
-    if (result != null) {
-      PlatformFile file = result.files.first;
-      // Use the 'file' object to access the selected file
-      // You can save or process the file as needed
-    }
-
-    Navigator.of(context).pop(); // Close the dialog
+  void _showApplyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: applyDialogContent(context),
+        );
+      },
+    ).then((result) {
+      // Reset the error flag when the dialog is closed
+      _errorShown = false;
+    });
   }
 
-  Widget contentBox(
-      BuildContext context,
-      String companyName,
-      String jobTitle,
-      String workplaceType,
-      String jobType,
-      String location,
-      String jobDescription,
-      String contactNumber,
-      String email,
-      ) {
+  Widget contentBox(BuildContext context, DataSnapshot snapshot) {
+    String companyName = snapshot.child('companyName').value.toString();
+    String jobTitle = snapshot.child('jobTitle').value.toString();
+    String workplaceType = snapshot.child('workplaceType').value.toString();
+    String jobType = snapshot.child('jobType').value.toString();
+    String location = snapshot.child('location').value.toString();
+    String jobDescription = snapshot.child('jobDescription').value.toString();
+    String email = snapshot.child('email').value.toString();
+
     return Stack(
       children: <Widget>[
         Container(
-          height: MediaQuery.of(context).size.width + 100,
-          width: 600,
-          // Adjust the width and height of the dialog box
-          padding: const EdgeInsets.all(10.0), // Add padding for content
+          width: 350,
+          height: 430,
+          padding: const EdgeInsets.all(34.0),
           decoration: BoxDecoration(
             shape: BoxShape.rectangle,
             color: Colors.white,
@@ -275,93 +252,225 @@ class _HomePageState extends State<HomePage> {
                   fontStyle: FontStyle.italic,
                 ),
               ),
-              const SizedBox(height: 30.0),
+              const SizedBox(height: 25.0),
               Text(
                 'Company Name: $companyName',
-                textAlign: TextAlign.start,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 10), // Increased spacing
+              const SizedBox(height: 5),
               Text(
                 'Job Title: $jobTitle',
-                textAlign: TextAlign.start,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 10), // Increased spacing
+              const SizedBox(height: 5),
               Text(
                 'Workplace Type: $workplaceType',
-                textAlign: TextAlign.start,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 16, // Increase the font size
+                  fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 10), // Increased spacing
+              const SizedBox(height: 5),
               Text(
                 'Job Type: $jobType',
-                textAlign: TextAlign.start,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 16, // Increase the font size
+                  fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 10), // Increased spacing
+              const SizedBox(height: 5),
               Text(
                 'Location: $location',
-                textAlign: TextAlign.start,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 16, // Increase the font size
+                  fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 10), // Increased spacing
+              const SizedBox(height: 5),
               Text(
                 'Job Description: $jobDescription',
-                textAlign: TextAlign.start,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 16, // Increase the font size
+                  fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 10), // Increased spacing
-              Text(
-                'Contact Number: $contactNumber',
-                textAlign: TextAlign.start,
-                style: const TextStyle(
-                  fontSize: 16, // Increase the font size
-                ),
-              ),
-              const SizedBox(height: 10), // Increased spacing
+              const SizedBox(height: 5),
               Text(
                 'Email: $email',
-                textAlign: TextAlign.start,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 16, // Increase the font size
+                  fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 20), // Increased spacing
+              const SizedBox(height: 20),
               Align(
                 alignment: Alignment.center,
                 child: ElevatedButton(
                   onPressed: () {
-                    _showApplyDialog(context); // Show the file picking dialog
+                    _showApplyDialog(context);
                   },
-                  child: const Text('Upload CV (PDF)'),
+                  child: const Text('Apply'),
                 ),
               ),
               Align(
                 alignment: Alignment.center,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(context).pop();
                   },
-                  child: const Text('Close'), // Close button
+                  child: const Text('Close'),
                 ),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget applyDialogContent(BuildContext context) {
+    bool isUploading = false; // Track the upload status
+
+    return Stack(
+      children: <Widget>[
+        Container(
+          width: 350,
+          height: 300,
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                offset: Offset(0, 10),
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              const Text(
+                'Apply for Job',
+                style: TextStyle(
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  _selectFile(); // Call the function to select a file
+                },
+                child: const Text('Upload CV (PDF)'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_selectedFile != null) {
+                    setState(() {
+                      isUploading = true; // Set uploading to true
+                    });
+                    _uploadFile(_selectedFile!).then((_) {
+                      setState(() {
+                        isUploading = false; // Set uploading to false when done
+                      });
+                      Navigator.of(context).pop(); // Close the dialog on success
+                    });
+                  } else {
+                    // Show an error message if no file is selected
+                    _showErrorMessage(context, 'Please select a CV (PDF) file.');
+                    // Set the error flag to true
+                    _errorShown = true;
+                  }
+                },
+                child: isUploading
+                    ? const CircularProgressIndicator() // Show loader when uploading
+                    : const Text('Confirm Apply'),
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _selectFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null) {
+        setState(() {
+          _selectedFile = File(result.files.single.path!);
+        });
+      }
+    } catch (e) {
+      print('Error selecting file: $e');
+    }
+  }
+
+  Future<void> _uploadFile(File file) async {
+    try {
+      FirebaseStorage storage = FirebaseStorage.instance;
+      String uid = auth.currentUser!.uid;
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      String fileName = '$uid-$timestamp.pdf';
+
+      Reference ref = storage.ref().child('user_cv').child(fileName);
+
+      UploadTask uploadTask = ref.putFile(
+        file,
+        SettableMetadata(
+          contentType: 'application/pdf', // Change to your file type
+        ),
+      );
+
+      await uploadTask;
+    } catch (e) {
+      print('Error uploading file: $e');
+      // Display an error message here
+      _showErrorMessage(context, 'An error occurred while uploading the file.');
+    }
+  }
+
+  void _showErrorMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
